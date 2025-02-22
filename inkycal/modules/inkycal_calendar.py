@@ -325,7 +325,7 @@ class Calendar(inkycal_module):
                     if 0 in calendar_indices:
                         draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 2)
                     if 1 in calendar_indices:
-                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=10, thickness = 2)
+                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 2)
 
 
             # Filter upcoming events until 4 weeks in the future
@@ -366,68 +366,114 @@ class Calendar(inkycal_module):
 
                 #Bad hardcoded practice. This wont work if we have more than 2 calendars...
                 #The data should be in a matrix or table or something.
+                # Create a dictionary to hold events grouped by their calendar_index
+                events_by_index = {}
 
-                cursor = 0
+                # Loop through each event and group by calendar_index
                 for event in upcoming_events:
-                    if cursor < len(event_lines):
-                        event_duration = (event['end'] - event['begin']).days
-                        if event_duration > 1:
-                            # Format the duration using Arrow's localization
-                            days_translation = arrow.get().shift(days=event_duration).humanize(only_distance=True,
-                                                                                               locale=lang)
-                            the_name = f"{event['title']} ({days_translation})"
-                        else:
-                            the_name = event['title']
-                        the_date = event['begin'].format(self.date_format, locale=lang)
-                        the_time = event['begin'].format(self.time_format, locale=lang)
-                        # logger.debug(f"name:{the_name}   date:{the_date} time:{the_time}")
+                    index = event['calendar_index']
+                    if index not in events_by_index:
+                        events_by_index[index] = []  # Initialize a list for this index if not already present
+                    events_by_index[index].append(event)
+
+                # Now you can access all events for a specific calendar_index like this:
+                for index in sorted(events_by_index.keys()):
+                    print(f"Events for Calendar Index {index}:")
+                    cursor = 0
+                    shift_right = index == 1
+                    #Hardcoded, not pretty...
+                    shift_offset = im_width // 2 if shift_right else 0  # Move to the middle for index 1
+
+                    if(shift_right):
+
+                        write(
+                            im_black,
+                            (shift_offset, event_lines[cursor][1]),
+                            (date_width, line_height),
+                            "Kirsten Sofia",
+                            font=self.font,
+                            alignment='left',
+                        )
+
+                    else:
+                        
+                        write(
+                            im_colour,
+                            (shift_offset, event_lines[cursor][1]),
+                            (date_width, line_height),
+                            "Gustav",
+                            font=self.font,
+                            alignment='left',
+                        )
+                    cursor +=1
+
+                    for event in events_by_index[index]:
+                        print(f"  {event['title']}")
 
 
-                        shift_right = event['calendar_index'] == 1
+                        #index = event['calendar_index']
+                        # Do something with the event and index
+                        #print(f"Event: {event}, Calendar Index: {index}")
 
-                        #Hardcoded, not pretty...
-                        shift_offset = im_width // 2 if shift_right else 0  # Move to the middle for index 1
 
-
-                        if now < event['end']:
-                            write(
-                                im_colour,
-                                (shift_offset, event_lines[cursor][1]),
-                                (date_width, line_height),
-                                the_date,
-                                font=self.font,
-                                alignment='left',
-                            )
-
-                            # Check if event is all day
-                            if parser.all_day(event):
-                                write(
-                                    im_black,
-                                    (date_width+ shift_offset, event_lines[cursor][1]),
-                                    (event_width_l, line_height),
-                                    the_name,
-                                    font=self.font,
-                                    alignment='left',
-                                )
+                        if cursor < len(event_lines):
+                            event_duration = (event['end'] - event['begin']).days
+                            if event_duration > 1:
+                                # Format the duration using Arrow's localization
+                                days_translation = arrow.get().shift(days=event_duration).humanize(only_distance=True,
+                                                                                                locale=lang)
+                                the_name = f"{event['title']} ({days_translation})"
                             else:
+                                the_name = event['title']
+                            the_date = event['begin'].format(self.date_format, locale=lang)
+                            the_time = event['begin'].format(self.time_format, locale=lang)
+                            # logger.debug(f"name:{the_name}   date:{the_date} time:{the_time}")
+
+
+
+
+
+                            if now < event['end']:
                                 write(
-                                    im_black,
-                                    (date_width+ shift_offset, event_lines[cursor][1]),
-                                    (time_width, line_height),
-                                    the_time,
+                                    im_colour,
+                                    (shift_offset, event_lines[cursor][1]),
+                                    (date_width, line_height),
+                                    the_date,
                                     font=self.font,
                                     alignment='left',
                                 )
 
-                                write(
-                                    im_black,
-                                    (date_width + time_width + shift_offset, event_lines[cursor][1]),
-                                    (event_width_s, line_height),
-                                    the_name,
-                                    font=self.font,
-                                    alignment='left',
-                                )
-                            cursor += 1
+                                # Check if event is all day
+                                if parser.all_day(event):
+                                    write(
+                                        im_black,
+                                        (date_width+ shift_offset, event_lines[cursor][1]),
+                                        (event_width_l, line_height),
+                                        the_name,
+                                        font=self.font,
+                                        alignment='left',
+                                    )
+                                else:
+                                    write(
+                                        im_black,
+                                        (date_width+ shift_offset, event_lines[cursor][1]),
+                                        (time_width, line_height),
+                                        the_time,
+                                        font=self.font,
+                                        alignment='left',
+                                    )
+
+                                    write(
+                                        im_black,
+                                        (date_width + time_width + shift_offset, event_lines[cursor][1]),
+                                        (event_width_s, line_height),
+                                        the_name,
+                                        font=self.font,
+                                        alignment='left',
+                                    )
+
+                                
+                                cursor += 1
             else:
                 symbol = '- '
 
