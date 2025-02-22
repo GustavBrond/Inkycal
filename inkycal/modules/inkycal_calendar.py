@@ -364,6 +364,9 @@ class Calendar(inkycal_module):
                 # tomorrow = now.shift(days=1).floor('day')
                 # in_two_days = now.shift(days=2).floor('day')
 
+                #Bad hardcoded practice. This wont work if we have more than 2 calendars...
+                #The data should be in a matrix or table or something.
+
                 cursor = 0
                 for event in upcoming_events:
                     if cursor < len(event_lines):
@@ -381,6 +384,8 @@ class Calendar(inkycal_module):
 
 
                         shift_right = event['calendar_index'] == 1
+
+                        #Hardcoded, not pretty...
                         shift_offset = im_width // 2 if shift_right else 0  # Move to the middle for index 1
 
 
