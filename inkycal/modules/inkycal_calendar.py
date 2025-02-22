@@ -355,48 +355,50 @@ class Calendar(inkycal_module):
                 text_bbox_height = self.font.getbbox("hg")
                 line_height = text_bbox_height[3] + line_spacing
 
+
+
                 event_width_s = im_width - date_width - time_width
                 event_width_l = im_width - date_width
 
                 # Display upcoming events below calendar TODO: not used?
                 # tomorrow = now.shift(days=1).floor('day')
                 # in_two_days = now.shift(days=2).floor('day')
+
                 cursor = 0
                 for event in upcoming_events:
                     if cursor < len(event_lines):
                         event_duration = (event['end'] - event['begin']).days
                         if event_duration > 1:
                             # Format the duration using Arrow's localization
-                            days_translation = arrow.get().shift(days=event_duration).humanize(only_distance=True, locale=lang)
+                            days_translation = arrow.get().shift(days=event_duration).humanize(only_distance=True,
+                                                                                               locale=lang)
                             the_name = f"{event['title']} ({days_translation})"
                         else:
                             the_name = event['title']
-
                         the_date = event['begin'].format(self.date_format, locale=lang)
                         the_time = event['begin'].format(self.time_format, locale=lang)
+                        # logger.debug(f"name:{the_name}   date:{the_date} time:{the_time}")
 
-                        # Determine if event belongs to calendar 1 and should be shifted
-                        shift_right = event['calendar_index'] == 1  # True if it's from the second calendar
 
-                        # Adjust positioning dynamically
+                        shift_right = event['calendar_index'] == 1
                         shift_offset = im_width // 2 if shift_right else 0  # Move to the middle for index 1
-                        new_date_width = date_width + shift_offset
-                        new_time_width = time_width + shift_offset
+
 
                         if now < event['end']:
                             write(
                                 im_colour,
-                                (event_lines[cursor][0] + shift_offset, event_lines[cursor][1]),  # Adjust X position
+                                (shift_offset, event_lines[cursor][1]),
                                 (date_width, line_height),
                                 the_date,
                                 font=self.font,
                                 alignment='left',
                             )
 
+                            # Check if event is all day
                             if parser.all_day(event):
                                 write(
                                     im_black,
-                                    (new_date_width, event_lines[cursor][1]),
+                                    (date_width+ shift_offset, event_lines[cursor][1]),
                                     (event_width_l, line_height),
                                     the_name,
                                     font=self.font,
@@ -405,8 +407,8 @@ class Calendar(inkycal_module):
                             else:
                                 write(
                                     im_black,
-                                    (new_date_width, event_lines[cursor][1]),
-                                    (new_time_width, line_height),
+                                    (date_width+ shift_offset, event_lines[cursor][1]),
+                                    (time_width, line_height),
                                     the_time,
                                     font=self.font,
                                     alignment='left',
@@ -414,7 +416,7 @@ class Calendar(inkycal_module):
 
                                 write(
                                     im_black,
-                                    (new_date_width + new_time_width, event_lines[cursor][1]),
+                                    (date_width + time_width + shift_offset, event_lines[cursor][1]),
                                     (event_width_s, line_height),
                                     the_name,
                                     font=self.font,
