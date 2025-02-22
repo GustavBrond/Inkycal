@@ -1,0 +1,54 @@
+{
+    "model": "epd_12_in_48_colour_V2",
+    "update_interval": 60,
+    "orientation": 0,
+    "info_section": true,
+    "info_section_height": 20,
+    "border_around_modules": false,
+    "modules": [
+        {
+            "position": 1,
+            "name": "Calendar",
+            "config": {
+                "size": [
+                    984,
+                    733
+                ],
+                "week_starts_on": "Monday",
+                "show_events": true,
+                "ical_urls": "https://p124-caldav.icloud.com/published/2/ODQ1MTc1MjMwMjg0NTE3NfQF2i1Hi-Xa3oLIYOjaas91zTjArBEJzU0XC4fgm_qK",
+                "ical_files": null,
+                "date_format": "D MMM",
+                "time_format": "HH:mm",
+                "padding_x": 0,
+                "padding_y": 0,
+                "fontsize": 12,
+                "language": "en"
+            }
+        },
+        {
+            "position": 2,
+            "name": "Slideshow",
+            "config": {
+                "size": [
+                    984,
+                    550
+                ],
+                "path": "/home/cal/images",
+                "palette": "bwr",
+                "autoflip": false,
+                "orientation": "horizontal",
+                "padding_x": 0,
+                "padding_y": 0,
+                "fontsize": 12,
+                "language": "en"
+            }
+        }
+    ],
+    "language": "en",
+    "calibration_hours": [
+        0,
+        12,
+        18
+    ]
+}

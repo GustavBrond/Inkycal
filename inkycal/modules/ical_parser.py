@@ -65,26 +65,6 @@ class iCalendar:
         if ical: self.icalendars += ical
         logger.info('loaded iCalendars from URLs')
 
-    def load_from_file(self, filepath):
-        """Input a string or list of strings containing valid iCalendar filepaths
-        example: 'path1' (single file) OR ['path1', 'path2'] (multiple files)
-        returns a list of iCalendars as string (raw)
-        """
-        if isinstance(filepath, list):
-            for path in filepath:
-                with open(path, mode='r') as ical_file:
-                    ical = (Calendar.from_ical(ical_file.read()))
-                    self.icalendars.append(ical)
-
-        elif isinstance(filepath, str):
-            with open(filepath, mode='r') as ical_file:
-                ical = (Calendar.from_ical(ical_file.read()))
-                self.icalendars.append(ical)
-        else:
-            raise Exception(f"Input: '{filepath}' is not a string or list!")
-
-        logger.info('loaded iCalendars from filepaths')
-
     def get_events(self, timeline_start, timeline_end, timezone=None):
         """Input an arrow (time) object for:
         * the beginning of timeline (events have to end after this time)
@@ -92,15 +72,13 @@ class iCalendar:
         * timezone if events should be formatted to local time
         Returns a list of events sorted by date
         """
-        if type(timeline_start) == arrow.arrow.Arrow:
+        if isinstance(timeline_start, arrow.arrow.Arrow):
             if timezone is None:
                 timezone = 'UTC'
             t_start = timeline_start
             t_end = timeline_end
         else:
             raise Exception('Please input a valid arrow (time) object!')
-
-        # parse non-recurring events
 
         # Recurring events time-span has to be in this format:
         # "%Y%m%dT%H%M%SZ" (python strftime)
@@ -110,27 +88,30 @@ class iCalendar:
         t_start_recurring = fmt(t_start)
         t_end_recurring = fmt(t_end)
 
-        # Fetch recurring events
-        recurring_events = (recurring_ical_events.of(ical).between(
-            t_start_recurring, t_end_recurring)
-            for ical in self.icalendars)
+        events = []
+        
+        # Iterate over each calendar with its source identifier
+        for ical_index, ical in enumerate(self.icalendars):
+            recurring_events = recurring_ical_events.of(ical).between(
+                t_start_recurring, t_end_recurring
+            )
+            
+            for event in recurring_events:
+                event_data = {
+                    'title': event.get('SUMMARY').lstrip() if event.get('SUMMARY') else "",
+                    'begin': arrow.get(event.get('DTSTART').dt).to(timezone) if (
+                            arrow.get(event.get('DTSTART').dt).format('HH:mm') != '00:00')
+                    else arrow.get(event.get('DTSTART').dt).replace(tzinfo=timezone),
+                    'end': arrow.get(event.get("DTEND").dt).to(timezone) if (
+                            arrow.get(event.get('DTSTART').dt).format('HH:mm') != '00:00')
+                    else arrow.get(event.get('DTEND').dt).replace(tzinfo=timezone),
+                    'calendar_index': ical_index
+                }
+                events.append(event_data)
 
-        events = (
-            {
-                'title': events.get('SUMMARY').lstrip() if events.get('SUMMARY') else "",
-
-                'begin': arrow.get(events.get('DTSTART').dt).to(timezone) if (
-                        arrow.get(events.get('dtstart').dt).format('HH:mm') != '00:00')
-                else arrow.get(events.get('DTSTART').dt).replace(tzinfo=timezone),
-
-                'end': arrow.get(events.get("DTEND").dt).to(timezone) if (
-                        arrow.get(events.get('dtstart').dt).format('HH:mm') != '00:00')
-                else arrow.get(events.get('DTEND').dt).replace(tzinfo=timezone)
-
-            } for ical in recurring_events for events in ical)
-
-        # if any recurring events were found, add them to parsed_events
-        if events: self.parsed_events += list(events)
+        # If any recurring events were found, add them to parsed_events
+        if events:
+            self.parsed_events += events
 
         # Sort events by their beginning date
         self.sort()

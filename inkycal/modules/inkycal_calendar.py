@@ -285,45 +285,48 @@ class Calendar(inkycal_module):
             self.ical = iCalendar()
             parser = self.ical
 
+            
+
             if self.ical_urls:
                 parser.load_url(self.ical_urls)
+                # I should put a for each here.
             if self.ical_files:
                 parser.load_from_file(self.ical_files)
 
+
+            print(len(parser.icalendars))
+
             # Filter events for full month (even past ones) for drawing event icons
             month_events = parser.get_events(month_start, month_end, self.timezone)
+            #print(month_events)
             parser.sort()
             self.month_events = month_events
 
             # Initialize days_with_events as an empty list
-            days_with_events = []
+            days_with_events = {}
 
-            # Handle multi-day events by adding all days between start and end
             for event in month_events:
-
-                # Convert start and end dates to arrow objects with timezone
                 start = arrow.get(event['begin'].date(), tzinfo=self.timezone)
                 end = arrow.get(event['end'].date(), tzinfo=self.timezone)
 
-                # Use arrow's range function for generating dates
+                calendar_index = event['calendar_index']  # Use the stored integer directly
+
                 for day in arrow.Arrow.range('day', start, end):
-                    day_num = int(day.format('D'))  # get day number using arrow's format method
+                    day_num = int(day.format('D'))
                     if day_num not in days_with_events:
-                        days_with_events.append(day_num)
+                        days_with_events[day_num] = set()
 
-            # remove duplicates (more than one event in a single day)
-            days_with_events = sorted(set(days_with_events))
-            self._days_with_events = days_with_events
+                    days_with_events[day_num].add(calendar_index)
 
-            # Draw a border with specified parameters around days with events
-            for days in days_with_events:
-                if days in grid:
-                    draw_border(
-                        im_colour,
-                        grid[days],
-                        (icon_width, icon_height),
-                        radius=6
-                    )
+            self._days_with_events = sorted(days_with_events.keys())
+
+            for day_num, calendar_indices in days_with_events.items():
+                if day_num in grid:
+                    if 0 in calendar_indices:
+                        draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 2)
+                    if 1 in calendar_indices:
+                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=10, thickness = 2)
+
 
             # Filter upcoming events until 4 weeks in the future
             parser.clear_events()
@@ -358,37 +361,42 @@ class Calendar(inkycal_module):
                 # Display upcoming events below calendar TODO: not used?
                 # tomorrow = now.shift(days=1).floor('day')
                 # in_two_days = now.shift(days=2).floor('day')
-
                 cursor = 0
                 for event in upcoming_events:
                     if cursor < len(event_lines):
                         event_duration = (event['end'] - event['begin']).days
                         if event_duration > 1:
                             # Format the duration using Arrow's localization
-                            days_translation = arrow.get().shift(days=event_duration).humanize(only_distance=True,
-                                                                                               locale=lang)
+                            days_translation = arrow.get().shift(days=event_duration).humanize(only_distance=True, locale=lang)
                             the_name = f"{event['title']} ({days_translation})"
                         else:
                             the_name = event['title']
+
                         the_date = event['begin'].format(self.date_format, locale=lang)
                         the_time = event['begin'].format(self.time_format, locale=lang)
-                        # logger.debug(f"name:{the_name}   date:{the_date} time:{the_time}")
+
+                        # Determine if event belongs to calendar 1 and should be shifted
+                        shift_right = event['calendar_index'] == 1  # True if it's from the second calendar
+
+                        # Adjust positioning dynamically
+                        shift_offset = im_width // 2 if shift_right else 0  # Move to the middle for index 1
+                        new_date_width = date_width + shift_offset
+                        new_time_width = time_width + shift_offset
 
                         if now < event['end']:
                             write(
                                 im_colour,
-                                event_lines[cursor],
+                                (event_lines[cursor][0] + shift_offset, event_lines[cursor][1]),  # Adjust X position
                                 (date_width, line_height),
                                 the_date,
                                 font=self.font,
                                 alignment='left',
                             )
 
-                            # Check if event is all day
                             if parser.all_day(event):
                                 write(
                                     im_black,
-                                    (date_width, event_lines[cursor][1]),
+                                    (new_date_width, event_lines[cursor][1]),
                                     (event_width_l, line_height),
                                     the_name,
                                     font=self.font,
@@ -397,8 +405,8 @@ class Calendar(inkycal_module):
                             else:
                                 write(
                                     im_black,
-                                    (date_width, event_lines[cursor][1]),
-                                    (time_width, line_height),
+                                    (new_date_width, event_lines[cursor][1]),
+                                    (new_time_width, line_height),
                                     the_time,
                                     font=self.font,
                                     alignment='left',
@@ -406,7 +414,7 @@ class Calendar(inkycal_module):
 
                                 write(
                                     im_black,
-                                    (date_width + time_width, event_lines[cursor][1]),
+                                    (new_date_width + new_time_width, event_lines[cursor][1]),
                                     (event_width_s, line_height),
                                     the_name,
                                     font=self.font,
