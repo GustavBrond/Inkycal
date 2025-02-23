@@ -321,11 +321,24 @@ class Calendar(inkycal_module):
             self._days_with_events = sorted(days_with_events.keys())
 
             for day_num, calendar_indices in days_with_events.items():
+                print("Current day number")
+                print(day_num)
+                print("Current calendar index")
+                print(calendar_indices)
                 if day_num in grid:
-                    if 0 in calendar_indices:
-                        draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4)
-                    if 1 in calendar_indices:
-                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4)
+
+                    if {0, 1}.issubset(calendar_indices):  # Checks if both 0 and 1 are present
+                        print(f"Day {day_num} contains both calendar indices 0 and 1")
+                        draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True)
+                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True, invert=True)
+
+
+                    else:
+
+                        if 0 in calendar_indices:
+                            draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
+                        if 1 in calendar_indices:
+                            draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
 
 
             # Filter upcoming events until 4 weeks in the future
