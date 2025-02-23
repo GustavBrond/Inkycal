@@ -12,7 +12,7 @@ from typing import Literal
 import numpy
 import PIL
 import requests
-from PIL import Image
+from PIL import Image,ImageOps
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +51,8 @@ class Inkyimage:
             else:
                 logger.info("loading image from local path")
                 image = Image.open(path)
+            image = ImageOps.exif_transpose(image)
+
         except FileNotFoundError:
             logger.error("No image file found", exc_info=True)
             raise Exception(f"Your file could not be found. Please check the filepath: {path}")
