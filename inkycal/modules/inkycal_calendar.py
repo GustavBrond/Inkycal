@@ -329,16 +329,37 @@ class Calendar(inkycal_module):
 
                     if {0, 1}.issubset(calendar_indices):  # Checks if both 0 and 1 are present
                         print(f"Day {day_num} contains both calendar indices 0 and 1")
-                        draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True)
-                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True, invert=True)
+
+                        # Draw dashed alternating black and color
+                        #draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True)
+                        #draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True, invert=True)
+                        
+                        
+                        #Draw nested
+                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
+
+
+                        offset = 7
+                        #Draw both a black border AND a red border
+                        print("Old cursor value")  # Output: (3, 4)
+                        xy = grid[day_num]
+                        print(xy)
+
+                        xy = (xy[0] + offset, xy[1] + offset)  # Create a new tuple
+                        print("New cursor value")  # Output: (3, 4)
+
+                        print(xy)  # Output: (3, 4)
+
+                        draw_border(im_colour, xy, (icon_width-2*offset, icon_height-2*offset), radius=6, thickness = 3)
+
 
 
                     else:
 
                         if 0 in calendar_indices:
-                            draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
-                        if 1 in calendar_indices:
                             draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
+                        if 1 in calendar_indices:
+                            draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
 
 
             # Filter upcoming events until 4 weeks in the future
@@ -400,7 +421,7 @@ class Calendar(inkycal_module):
                     if(shift_right):
 
                         draw_border(
-                            im_black, 
+                            im_colour, 
                             (shift_offset, event_lines[cursor+1][1]),
                             (date_width, line_height*1.5),
                             radius=6, 
@@ -430,7 +451,7 @@ class Calendar(inkycal_module):
 
                     else:
                         draw_border(
-                            im_colour, 
+                            im_black, 
                             (shift_offset, event_lines[cursor+1][1]),
                             (date_width, line_height*1.5),
                             radius=6,
