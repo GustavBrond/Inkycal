@@ -37,6 +37,9 @@ class Calendar(inkycal_module):
         "ical_files": {
             "label": "iCalendar filepaths, separated with a comma",
         },
+        "ical_names": {
+            "label": "iCalendar names seperated by a comma, e.g. John, Jane",
+        },
         "date_format": {
             "label": "Use an arrow-supported token for custom date formatting "
                      + "see https://arrow.readthedocs.io/en/stable/#supported-tokens, e.g. D MMM",
@@ -76,6 +79,11 @@ class Calendar(inkycal_module):
             self.ical_files = config['ical_files'].split(',')
         else:
             self.ical_files = config['ical_files']
+
+        if config['ical_names'] and isinstance(config['ical_names'], str):
+            self.ical_names = config['ical_names'].split(',')
+        else:
+            self.ical_names = config['ical_names']
 
         # additional configuration
         self.timezone = get_system_tz()
@@ -294,6 +302,7 @@ class Calendar(inkycal_module):
                 parser.load_from_file(self.ical_files)
 
 
+
             print(len(parser.icalendars))
 
             # Filter events for full month (even past ones) for drawing event icons
@@ -333,29 +342,17 @@ class Calendar(inkycal_module):
                         # Draw dashed alternating black and color
                         #draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True)
                         #draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True, invert=True)
-                        
-                        
+
                         #Draw nested
                         draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
 
-
                         offset = 7
                         #Draw both a black border AND a red border
-                        print("Old cursor value")  # Output: (3, 4)
                         xy = grid[day_num]
-                        print(xy)
-
                         xy = (xy[0] + offset, xy[1] + offset)  # Create a new tuple
-                        print("New cursor value")  # Output: (3, 4)
-
-                        print(xy)  # Output: (3, 4)
-
                         draw_border(im_colour, xy, (icon_width-2*offset, icon_height-2*offset), radius=6, thickness = 3)
 
-
-
                     else:
-
                         if 0 in calendar_indices:
                             draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 3)
                         if 1 in calendar_indices:
@@ -412,11 +409,18 @@ class Calendar(inkycal_module):
 
                 # Now you can access all events for a specific calendar_index like this:
                 for index in sorted(events_by_index.keys()):
-                    print(f"Events for Calendar Index {index}:")
+                    #print(f"Events for Calendar Index {index}:")
                     cursor = 0
                     shift_right = index == 1
                     #Hardcoded, not pretty...
                     shift_offset = im_width // 2 if shift_right else 0  # Move to the middle for index 1
+
+
+                    #
+                    #if self.ical_names:
+                    #    print(self.ical_names[0])
+
+                    #    print(self.ical_names[1])
 
                     if(shift_right):
 
@@ -428,26 +432,16 @@ class Calendar(inkycal_module):
                             thickness = 4
                         )
 
-                        '''
-                        write(
-                            im_black,
-                            (shift_offset, event_lines[cursor][1]),
-                            (date_width, line_height*3),
-                            "☐",
-                            font=self.font,
-                            alignment='left',
-                            autofit=True
-                        )  
-                        '''
-                        write(
-                            im_black,
-                            (date_width + shift_offset, event_lines[cursor][1]),
-                            (event_width_l, line_height*3),
-                            " Kirsten Sofia", #Event_width_l should match the length of the string
-                            font=self.font,
-                            alignment='left',
-                            autofit=True
-                        )
+                        if self.ical_names[1]:
+                            write(
+                                im_black,
+                                (date_width + shift_offset, event_lines[cursor][1]),
+                                (event_width_l, line_height*3),
+                                " "+self.ical_names[1], #Event_width_l should match the length of the string
+                                font=self.font,
+                                alignment='left',
+                                autofit=True
+                            )
 
                     else:
                         draw_border(
@@ -457,36 +451,20 @@ class Calendar(inkycal_module):
                             radius=6,
                             thickness = 4
                         )
-                        '''
-                        write(
-                            im_colour,
-                            (shift_offset, event_lines[cursor][1]),
-                            (date_width, line_height*3),
-                            "☐",
-                            font=self.font,
-                            alignment='left',
-                            autofit=True
-                        )  
-                        '''
-                        write(
-                            im_black,
-                            (date_width + shift_offset, event_lines[cursor][1]),
-                            (event_width_l, line_height*3),
-                            " Gustav",
-                            font=self.font,
-                            alignment='left',
-                            autofit=True
-                        )
+                        if self.ical_names[0]:
+
+                            write(
+                                im_black,
+                                (date_width + shift_offset, event_lines[cursor][1]),
+                                (event_width_l, line_height*3),
+                                " " + self.ical_names[0],
+                                font=self.font,
+                                alignment='left',
+                                autofit=True
+                            )
                     cursor +=3
 
                     for event in events_by_index[index]:
-                        print(f"  {event['title']}")
-
-
-                        #index = event['calendar_index']
-                        # Do something with the event and index
-                        #print(f"Event: {event}, Calendar Index: {index}")
-
 
                         if cursor < len(event_lines):
                             event_duration = (event['end'] - event['begin']).days

@@ -63,8 +63,10 @@ class Slideshow(inkycal_module):
         self.orientation = config['orientation']
 
         # Get the full path of all png/jpg/jpeg images in the given folder
-        all_files = glob.glob(f'{self.path}/*')
+        all_files = glob.glob(f'{self.path}/**/*', recursive=True) #Search subfolders
         self.images = [i for i in all_files if i.split('.')[-1].lower() in ('jpg', 'jpeg', 'png')]
+
+        #print(self.images)
 
         if not self.images:
             logger.error('No images found in the given folder, please double check your path!')
