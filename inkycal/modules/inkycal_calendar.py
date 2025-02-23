@@ -323,9 +323,9 @@ class Calendar(inkycal_module):
             for day_num, calendar_indices in days_with_events.items():
                 if day_num in grid:
                     if 0 in calendar_indices:
-                        draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 2)
+                        draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4)
                     if 1 in calendar_indices:
-                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 2)
+                        draw_border(im_black, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4)
 
 
             # Filter upcoming events until 4 weeks in the future
@@ -386,26 +386,64 @@ class Calendar(inkycal_module):
 
                     if(shift_right):
 
+                        draw_border(
+                            im_black, 
+                            (shift_offset, event_lines[cursor+1][1]),
+                            (date_width, line_height*1.5),
+                            radius=6, 
+                            thickness = 4
+                        )
+
+                        '''
                         write(
                             im_black,
                             (shift_offset, event_lines[cursor][1]),
-                            (date_width, line_height),
-                            "Kirsten Sofia",
+                            (date_width, line_height*3),
+                            "☐",
                             font=self.font,
                             alignment='left',
+                            autofit=True
+                        )  
+                        '''
+                        write(
+                            im_black,
+                            (date_width + shift_offset, event_lines[cursor][1]),
+                            (event_width_l, line_height*3),
+                            " Kirsten Sofia", #Event_width_l should match the length of the string
+                            font=self.font,
+                            alignment='left',
+                            autofit=True
                         )
 
                     else:
-                        
+                        draw_border(
+                            im_colour, 
+                            (shift_offset, event_lines[cursor+1][1]),
+                            (date_width, line_height*1.5),
+                            radius=6,
+                            thickness = 4
+                        )
+                        '''
                         write(
                             im_colour,
                             (shift_offset, event_lines[cursor][1]),
-                            (date_width, line_height),
-                            "Gustav",
+                            (date_width, line_height*3),
+                            "☐",
                             font=self.font,
                             alignment='left',
+                            autofit=True
+                        )  
+                        '''
+                        write(
+                            im_black,
+                            (date_width + shift_offset, event_lines[cursor][1]),
+                            (event_width_l, line_height*3),
+                            " Gustav",
+                            font=self.font,
+                            alignment='left',
+                            autofit=True
                         )
-                    cursor +=1
+                    cursor +=3
 
                     for event in events_by_index[index]:
                         print(f"  {event['title']}")
@@ -447,7 +485,7 @@ class Calendar(inkycal_module):
                                 if parser.all_day(event):
                                     write(
                                         im_black,
-                                        (date_width+ shift_offset, event_lines[cursor][1]),
+                                        (date_width + shift_offset, event_lines[cursor][1]),
                                         (event_width_l, line_height),
                                         the_name,
                                         font=self.font,
