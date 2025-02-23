@@ -303,7 +303,7 @@ class Calendar(inkycal_module):
 
 
 
-            print(len(parser.icalendars))
+            #print(len(parser.icalendars))
 
             # Filter events for full month (even past ones) for drawing event icons
             month_events = parser.get_events(month_start, month_end, self.timezone)
@@ -330,14 +330,14 @@ class Calendar(inkycal_module):
             self._days_with_events = sorted(days_with_events.keys())
 
             for day_num, calendar_indices in days_with_events.items():
-                print("Current day number")
-                print(day_num)
-                print("Current calendar index")
-                print(calendar_indices)
+                #print("Current day number")
+                #print(day_num)
+                #print("Current calendar index")
+                #print(calendar_indices)
                 if day_num in grid:
 
                     if {0, 1}.issubset(calendar_indices):  # Checks if both 0 and 1 are present
-                        print(f"Day {day_num} contains both calendar indices 0 and 1")
+                        #print(f"Day {day_num} contains both calendar indices 0 and 1")
 
                         # Draw dashed alternating black and color
                         #draw_border(im_colour, grid[day_num], (icon_width, icon_height), radius=6, thickness = 4, dashed=True)

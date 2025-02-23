@@ -64,7 +64,7 @@ class Slideshow(inkycal_module):
 
         # Get the full path of all png/jpg/jpeg images in the given folder
         all_files = glob.glob(f'{self.path}/**/*', recursive=True) #Search subfolders
-        self.images = [i for i in all_files if i.split('.')[-1].lower() in ('jpg', 'jpeg', 'png')]
+        self.images = [i for i in all_files if i.split('.')[-1].lower() in ('jpg', 'jpeg', 'png', 'heic')]
 
         #print(self.images)
 

@@ -13,6 +13,11 @@ import numpy
 import PIL
 import requests
 from PIL import Image,ImageOps
+from pi_heif import register_heif_opener
+
+register_heif_opener()
+
+
 
 logger = logging.getLogger(__name__)
 
