@@ -315,7 +315,20 @@ class Calendar(inkycal_module):
             days_with_events = {}
 
             for event in month_events:
+
+                
                 start = arrow.get(event['begin'].date(), tzinfo=self.timezone)
+
+                print("event name:")
+                print(event['title'])
+                print("Start:")
+                print(start)
+
+                print("Is the event all day?")
+                parser.all_day(event) #We should check if the event is all day, and adjust the start accordingly
+                print(parser.all_day(event))
+
+
                 end = arrow.get(event['end'].date(), tzinfo=self.timezone)
 
                 calendar_index = event['calendar_index']  # Use the stored integer directly
