@@ -16,6 +16,9 @@ from inkycal.display import Display
 from inkycal.modules.inky_image import Inkyimage as Images
 from inkycal.utils import JSONCache
 
+import socket
+
+
 logger = logging.getLogger(__name__)
 
 settings = Settings()
@@ -238,8 +241,14 @@ class Inkycal:
         # store module numbers in here
         errors = []
 
+        import subprocess
+
+
+
         # short info for info-section
         self.info = f"{arrow.now().format('D MMM @ HH:mm')}  "
+
+
 
         for number in range(1, self._module_number):
             name = eval(f"self.module_{number}.name")
@@ -325,7 +334,26 @@ class Inkycal:
 
             # Short info for info-section
             if not self.settings.get('image_hash', False):
-                self.info = f"{current_time.format('D MMM @ HH:mm')}  "
+                #self.info = f"{current_time.format('D MMM @ HH:mm')}  "
+                with open("/sys/class/thermal/thermal_zone0/temp") as f:
+                    temp_c = int(f.read()) / 1000
+            
+                import socket
+                def get_ip():
+                    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+                    try:
+                        s.connect(("8.8.8.8", 80))
+                        return s.getsockname()[0]
+                    finally:
+                        s.close()
+
+                ip_address = get_ip()
+
+                self.info = (
+                    f"{current_time.format('D MMM @ HH:mm')}  "
+                    f"Temp: {temp_c}°C  "
+                    f"IP: {ip_address}"
+                )
             else:
                 self.info = ""
 
@@ -521,11 +549,15 @@ class Inkycal:
 
         # Calculate the max. fontsize for info-section
         if self.settings['info_section']:
+
             info_height = self.settings["info_section_height"]
             info_width = width
             font = self.font = ImageFont.truetype(
                 fonts['NotoSansUI-Regular'], size=14)
 
+
+            #Adding more debug options
+            
             info_x = im_black.size[1] - info_height
             write(im_black, (0, info_x), (info_width, info_height),
                   self.info, font=font)

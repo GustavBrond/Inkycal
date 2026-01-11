@@ -657,7 +657,9 @@ class Fullweather(inkycal_module):
             style = "Bold"
         elif self.font == "OpenSans" and style == "Black":
             style = "ExtraBold"
-        return ImageFont.truetype(fonts[f"{self.font}-{style}"], size=size)
+        
+
+        return ImageFont.truetype(fonts['NotoSansUI-Bold'], size=self.fontsize)
 
 
 if __name__ == "__main__":

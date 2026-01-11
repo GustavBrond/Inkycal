@@ -106,8 +106,8 @@ class Weather(inkycal_module):
         else:
             self.temp_unit = "celsius"
 
-        if config['use_beaufort']:
-            self.wind_unit = "beaufort"
+        if config['wind_unit']:
+            self.wind_unit = config['wind_unit']
         elif config['units'] == "imperial":
             self.wind_unit = "miles_hour"
         else:
